@@ -1,5 +1,6 @@
+import { Button } from "~/components/ui/button";
 import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
+/* import { Welcome } from "../welcome/welcome"; */
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -9,5 +10,5 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-  return <Welcome />;
+  return <h1>Truckor <Button>Click me</Button></h1>;
 }
