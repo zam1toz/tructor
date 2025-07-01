@@ -24,6 +24,37 @@ Install the dependencies:
 npm install
 ```
 
+### Database Setup
+
+This project uses Drizzle ORM with PostgreSQL. Follow these steps to set up the database:
+
+1. **Install PostgreSQL** and create a database named `tructor`
+
+2. **Set up environment variables**:
+   Create a `.env` file in the root directory:
+   ```env
+   DATABASE_URL=postgresql://username:password@localhost:5432/tructor
+   ```
+
+3. **Generate and run migrations**:
+   ```bash
+   npm run db:generate
+   npm run db:migrate
+   ```
+
+4. **Optional: Use Drizzle Studio** to view and edit data:
+   ```bash
+   npm run db:studio
+   ```
+
+### Database Commands
+
+- `npm run db:generate` - Generate migration files
+- `npm run db:migrate` - Run migrations
+- `npm run db:push` - Push schema changes directly to database
+- `npm run db:studio` - Open Drizzle Studio for database management
+- `npm run db:seed` - Seed database with initial test data
+
 ### Development
 
 Start the development server with HMR:

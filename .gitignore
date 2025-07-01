@@ -4,9 +4,27 @@
 # React Router
 /.react-router/
 /build/
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Database
+/drizzle/
+
+# Documentation (optional - uncomment if you want to ignore docs)
+# doc/amazon_Press_Release_FAQ.md
+# doc/Data Model Planning Worksheet_tructor.md
+# doc/JTBD_Tructor.md
+# doc/System Footprint_URL Map_tructor.md
+# doc/WorkingBackwards_Tructor.md
+# doc/ycombinator_screener_2nd_day.md
 doc/amazon_Press_Release_FAQ.md
 doc/Data Model Planning Worksheet_tructor.md
 doc/JTBD_Tructor.md
 doc/System Footprint_URL Map_tructor.md
 doc/WorkingBackwards_Tructor.md
 doc/ycombinator_screener_2nd_day.md
+SUPABASE_SETUP.md
+test-supabase.js
