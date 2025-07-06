@@ -1,6 +1,18 @@
-import { Link } from "react-router";
+import { Link, useLoaderData } from "react-router";
+import { getRestAreas } from "~/lib/db/queries";
+
+export async function loader() {
+  try {
+    const restAreas = await getRestAreas();
+    return { restAreas };
+  } catch (error) {
+    console.error('지도 데이터 로딩 오류:', error);
+    return { restAreas: [] };
+  }
+}
 
 export default function MapPage() {
+  const { restAreas } = useLoaderData<typeof loader>();
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
@@ -49,20 +61,24 @@ export default function MapPage() {
           </div>
           
           <div className="border rounded-lg p-4">
-            <h3 className="font-semibold mb-3">근처 위치</h3>
+            <h3 className="font-semibold mb-3">등록된 위치 ({restAreas.length})</h3>
             <div className="space-y-2">
-              <div className="p-2 border rounded cursor-pointer hover:bg-gray-50">
-                <div className="font-medium">휴게소 A</div>
-                <div className="text-sm text-gray-600">거리: 2.3km</div>
-              </div>
-              <div className="p-2 border rounded cursor-pointer hover:bg-gray-50">
-                <div className="font-medium">정비소 B</div>
-                <div className="text-sm text-gray-600">거리: 5.1km</div>
-              </div>
-              <div className="p-2 border rounded cursor-pointer hover:bg-gray-50">
-                <div className="font-medium">단속 구간 C</div>
-                <div className="text-sm text-gray-600">거리: 8.7km</div>
-              </div>
+              {restAreas.length === 0 ? (
+                <p className="text-gray-500 text-sm">등록된 위치가 없습니다.</p>
+              ) : (
+                restAreas.map((restArea) => (
+                  <Link 
+                    key={restArea.id} 
+                    to={`/location/${restArea.id}`}
+                    className="block p-2 border rounded cursor-pointer hover:bg-gray-50"
+                  >
+                    <div className="font-medium">{restArea.name}</div>
+                    <div className="text-sm text-gray-600">
+                      {restArea.type} • 평점: {restArea.averageRating}
+                    </div>
+                  </Link>
+                ))
+              )}
             </div>
           </div>
         </div>

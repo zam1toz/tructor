@@ -1,10 +1,11 @@
 // Supabase 설정
 export const config = {
   database: {
-    // Supabase 연결 (비밀번호 재설정 후 사용)
-    url: process.env.DATABASE_URL || 'postgresql://postgres:tructor#4431@db.fqeexfxrwgqplyhsfrcc.supabase.co:5432/postgres',
-    // 로컬 PostgreSQL 연결 (임시)
-    //url: process.env.DATABASE_URL || 'postgresql://postgres:password@localhost:5432/tructor',
+    // Supabase Pooler 연결 (IPv4 호환)
+    // 환경변수가 설정되지 않은 경우 기본값 사용
+    url: process.env.DATABASE_URL || 'postgresql://postgres.fqeexfxrwgqplyhsfrcc:tructor%234431@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres',
+    // 직접 연결 (IPv6 전용) - IPv4 환경에서는 사용 불가
+    //url: process.env.DATABASE_URL || 'postgresql://postgres:tructor%234431@db.fqeexfxrwgqplyhsfrcc.supabase.co:5432/postgres',
   },
   supabase: {
     url: process.env.SUPABASE_URL || 'https://fqeexfxrwgqplyhsfrcc.supabase.co',

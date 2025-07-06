@@ -1,5 +1,5 @@
 import { Button } from "~/components/ui/button";
-import { Link } from "react-router";
+import { Link, useLoaderData } from "react-router";
 import { 
   Trophy, 
   Star, 
@@ -9,6 +9,17 @@ import {
   Calendar,
   Award
 } from "lucide-react";
+import { getUserRankings } from "~/lib/db/queries";
+
+export async function loader() {
+  try {
+    const rankings = await getUserRankings(10);
+    return { rankings };
+  } catch (error) {
+    console.error('랭킹 데이터 로딩 오류:', error);
+    return { rankings: [] };
+  }
+}
 
 export function meta() {
   return [
@@ -18,24 +29,12 @@ export function meta() {
 }
 
 export default function Ranking() {
-  // TODO: 실제 랭킹 데이터로 교체
-  const rankingData = {
-    myRank: 15,
-    myPoints: 1250,
-    myLevel: 5,
-    rankings: [
-      { rank: 1, nickname: "달리는기사", points: 3450, level: 12, badges: ["단속헌터", "쉼터마스터"] },
-      { rank: 2, nickname: "고속도로킹", points: 2980, level: 10, badges: ["댓글왕"] },
-      { rank: 3, nickname: "트럭마스터", points: 2670, level: 9, badges: ["단속헌터"] },
-      { rank: 4, nickname: "도로의달인", points: 2340, level: 8, badges: ["쉼터마스터"] },
-      { rank: 5, nickname: "운전고수", points: 2100, level: 7, badges: [] },
-      { rank: 6, nickname: "길잡이", points: 1890, level: 6, badges: [] },
-      { rank: 7, nickname: "도로친구", points: 1670, level: 6, badges: [] },
-      { rank: 8, nickname: "고속도로맨", points: 1450, level: 5, badges: [] },
-      { rank: 9, nickname: "트럭러버", points: 1320, level: 5, badges: [] },
-      { rank: 10, nickname: "운전왕", points: 1180, level: 4, badges: [] },
-    ]
-  };
+  const { rankings } = useLoaderData<typeof loader>();
+  
+  // 임시 사용자 데이터 (실제로는 인증된 사용자 정보를 사용해야 함)
+  const myRank = 15;
+  const myPoints = 1250;
+  const myLevel = 5;
 
   const missions = [
     { id: 1, title: "일일 게시글 작성", description: "오늘 게시글을 1개 작성하세요", reward: 50, completed: true },
@@ -80,15 +79,15 @@ export default function Ranking() {
               <h1 className="text-2xl font-bold mb-2">내 랭킹</h1>
               <div className="flex items-center space-x-6">
                 <div className="text-center">
-                  <div className="text-3xl font-bold">{rankingData.myRank}</div>
+                  <div className="text-3xl font-bold">{myRank}</div>
                   <div className="text-sm opacity-90">순위</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold">{rankingData.myPoints.toLocaleString()}</div>
+                  <div className="text-3xl font-bold">{myPoints.toLocaleString()}</div>
                   <div className="text-sm opacity-90">포인트</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold">Lv.{rankingData.myLevel}</div>
+                  <div className="text-3xl font-bold">Lv.{myLevel}</div>
                   <div className="text-sm opacity-90">레벨</div>
                 </div>
               </div>
@@ -121,33 +120,30 @@ export default function Ranking() {
 
           <div className="p-6">
             <div className="space-y-4">
-              {rankingData.rankings.map((user) => (
-                <div key={user.rank} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
-                  <div className="flex-shrink-0 w-8 text-center">
-                    {getRankIcon(user.rank)}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2">
-                      <h3 className="font-semibold text-gray-900">{user.nickname}</h3>
-                      <div className="flex items-center bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">
-                        <Star className="h-3 w-3 mr-1" />
-                        Lv.{user.level}
+              {rankings.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">랭킹 데이터가 없습니다.</p>
+              ) : (
+                rankings.map((user) => (
+                  <div key={user.rank} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+                    <div className="flex-shrink-0 w-8 text-center">
+                      {getRankIcon(user.rank)}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2">
+                        <h3 className="font-semibold text-gray-900">{user.nickname}</h3>
+                        <div className="flex items-center bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">
+                          <Star className="h-3 w-3 mr-1" />
+                          Lv.{user.level}
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2 mt-1">
+                        <span className="text-sm text-gray-600">{user.points.toLocaleString()}P</span>
+                        <span className="text-xs text-gray-500">({user.region})</span>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2 mt-1">
-                      <span className="text-sm text-gray-600">{user.points.toLocaleString()}P</span>
-                      {user.badges.map((badge, index) => (
-                        <span
-                          key={index}
-                          className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs"
-                        >
-                          {badge}
-                        </span>
-                      ))}
-                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </section>

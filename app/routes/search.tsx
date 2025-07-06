@@ -1,6 +1,24 @@
 import { Button } from "~/components/ui/button";
-import { Link, useSearchParams } from "react-router";
+import { Link, useSearchParams, useLoaderData } from "react-router";
 import { Search, MessageSquare, MapPin, AlertTriangle, Target } from "lucide-react";
+import { searchPosts } from "~/lib/db/queries";
+
+export async function loader({ request }: { request: Request }) {
+  const url = new URL(request.url);
+  const query = url.searchParams.get("q") || "";
+  
+  if (!query.trim()) {
+    return { results: [], query };
+  }
+  
+  try {
+    const results = await searchPosts(query, 20);
+    return { results, query };
+  } catch (error) {
+    console.error('검색 오류:', error);
+    return { results: [], query };
+  }
+}
 
 export function meta() {
   return [
@@ -11,33 +29,7 @@ export function meta() {
 
 export default function SearchResult() {
   const [params] = useSearchParams();
-  const query = params.get("q") || "";
-
-  // TODO: 실제 검색 결과 데이터로 교체
-  const results = [
-    {
-      id: 1,
-      title: "경부선 고속도로 단속 정보",
-      content: "오늘 오후 2시부터 경부선 고속도로에서 단속이 있을 예정입니다...",
-      category: "단속 정보",
-      author: "달리는기사",
-      date: "2024-01-15",
-      likes: 24,
-      comments: 8,
-      icon: <AlertTriangle className="h-4 w-4 text-red-500" />
-    },
-    {
-      id: 2,
-      title: "서울외곽순환도로 쉼터 추천",
-      content: "서울외곽순환도로에서 가장 깨끗하고 편리한 쉼터를 소개합니다...",
-      category: "쉼터 정보",
-      author: "고속도로킹",
-      date: "2024-01-14",
-      likes: 18,
-      comments: 5,
-      icon: <MapPin className="h-4 w-4 text-blue-500" />
-    }
-  ];
+  const { results, query } = useLoaderData<typeof loader>();
 
   const getCategoryColor = (category: string) => {
     switch (category) {
@@ -87,7 +79,9 @@ export default function SearchResult() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-2">
-                      {result.icon}
+                      {result.category === '단속 정보' && <AlertTriangle className="h-4 w-4 text-red-500" />}
+                      {result.category === '쉼터 정보' && <MapPin className="h-4 w-4 text-blue-500" />}
+                      {result.category === '노하우' && <Target className="h-4 w-4 text-green-500" />}
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(result.category)}`}>
                         {result.category}
                       </span>
@@ -100,17 +94,17 @@ export default function SearchResult() {
                     <p className="text-gray-600 mb-3 line-clamp-2">{result.content}</p>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4 text-sm text-gray-500">
-                        <span>{result.author}</span>
-                        <span>{result.date}</span>
+                        <span>{result.author?.nickname || '알 수 없음'}</span>
+                        <span>{new Date(result.createdAt).toLocaleDateString()}</span>
                       </div>
                       <div className="flex items-center space-x-4 text-sm text-gray-500">
                         <span className="flex items-center space-x-1">
                           <MessageSquare className="h-4 w-4" />
-                          <span>{result.likes}</span>
+                          <span>{result.likeCount}</span>
                         </span>
                         <span className="flex items-center space-x-1">
                           <MessageSquare className="h-4 w-4" />
-                          <span>{result.comments}</span>
+                          <span>{result.commentCount}</span>
                         </span>
                       </div>
                     </div>

@@ -109,8 +109,8 @@ async function seed() {
   }
 }
 
-// 스크립트가 직접 실행될 때만 실행
-if (require.main === module) {
+// ES 모듈에서 직접 실행 확인
+if (import.meta.url === `file://${process.argv[1]}`) {
   seed()
     .then(() => {
       console.log('✅ 시드 완료');
