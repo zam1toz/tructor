@@ -1,7 +1,8 @@
 import { Button } from "~/components/ui/button";
-import { Link } from "react-router";
-import { useState } from "react";
+import { Link, useNavigate } from "react-router";
+import { useState, useEffect } from "react";
 import { Eye, EyeOff, Truck, Check } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
 
 export function meta() {
   return [
@@ -11,6 +12,8 @@ export function meta() {
 }
 
 export default function Register() {
+  const navigate = useNavigate();
+  const { register, user, loading, error, clearError } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -18,18 +21,45 @@ export default function Register() {
     phone: "",
     password: "",
     confirmPassword: "",
+    region: "서울",
     agreeTerms: false,
     agreePrivacy: false,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // 이미 로그인된 사용자는 홈으로 리다이렉트
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
+
+  // 에러 메시지가 변경되면 5초 후 자동으로 제거
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        clearError();
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error, clearError]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: 회원가입 로직 구현
-    console.log("회원가입 시도:", formData);
+    clearError();
+    
+    if (formData.password !== formData.confirmPassword) {
+      return;
+    }
+    
+    const success = await register(formData.phone, formData.password, formData.nickname, formData.region);
+    if (success) {
+      navigate("/");
+    }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
     setFormData({
       ...formData,
       [name]: type === "checkbox" ? checked : value,
@@ -102,6 +132,40 @@ export default function Register() {
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder="010-1234-5678"
                 />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="region" className="block text-sm font-medium text-gray-700">
+                지역
+              </label>
+              <div className="mt-1">
+                <select
+                  id="region"
+                  name="region"
+                  required
+                  value={formData.region}
+                  onChange={handleChange}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                >
+                  <option value="서울">서울</option>
+                  <option value="부산">부산</option>
+                  <option value="대구">대구</option>
+                  <option value="인천">인천</option>
+                  <option value="광주">광주</option>
+                  <option value="대전">대전</option>
+                  <option value="울산">울산</option>
+                  <option value="세종">세종</option>
+                  <option value="경기">경기</option>
+                  <option value="강원">강원</option>
+                  <option value="충북">충북</option>
+                  <option value="충남">충남</option>
+                  <option value="전북">전북</option>
+                  <option value="전남">전남</option>
+                  <option value="경북">경북</option>
+                  <option value="경남">경남</option>
+                  <option value="제주">제주</option>
+                </select>
               </div>
             </div>
 
@@ -214,13 +278,19 @@ export default function Register() {
               </div>
             </div>
 
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-md p-3">
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            )}
+
             <div>
               <Button
                 type="submit"
-                disabled={!isFormValid()}
+                disabled={!isFormValid() || loading}
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                회원가입
+                {loading ? "회원가입 중..." : "회원가입"}
               </Button>
             </div>
           </form>

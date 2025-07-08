@@ -22,5 +22,9 @@ export default [
   route("faq", "routes/faq.tsx"),
   route("search", "routes/search.tsx"),
   route("admin", "routes/admin.tsx"),
+  route("api/auth/login", "routes/api.auth.login.tsx"),
+  route("api/auth/register", "routes/api.auth.register.tsx"),
+  route("api/auth/logout", "routes/api.auth.logout.tsx"),
+  route("api/auth/verify", "routes/api.auth.verify.tsx"),
   route("*", "routes/not-found.tsx"),
 ] satisfies RouteConfig;

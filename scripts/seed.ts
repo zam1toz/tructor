@@ -9,7 +9,7 @@ async function seed() {
     const adminUser = await db.insert(users).values({
       nickname: 'admin',
       region: '서울',
-      isAdmin: true,
+      is_admin: true,
       status: 'active',
     }).returning();
 
@@ -20,19 +20,19 @@ async function seed() {
       {
         nickname: '트럭기사1',
         region: '경기',
-        isAdmin: false,
+        is_admin: false,
         status: 'active',
       },
       {
         nickname: '고속도로킹',
         region: '부산',
-        isAdmin: false,
+        is_admin: false,
         status: 'active',
       },
       {
         nickname: '달리는기사',
         region: '대구',
-        isAdmin: false,
+        is_admin: false,
         status: 'active',
       },
     ]).returning();
@@ -109,8 +109,8 @@ async function seed() {
   }
 }
 
-// 스크립트가 직접 실행될 때만 실행
-if (require.main === module) {
+// ES 모듈에서 직접 실행 확인
+if (import.meta.url === `file://${process.argv[1]}`) {
   seed()
     .then(() => {
       console.log('✅ 시드 완료');

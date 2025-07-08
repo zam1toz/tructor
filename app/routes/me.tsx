@@ -1,5 +1,6 @@
 import { Button } from "~/components/ui/button";
 import { Link } from "react-router";
+import { useAuth } from "~/contexts/AuthContext";
 import { 
   User, 
   MapPin, 
@@ -21,14 +22,35 @@ export function meta() {
 }
 
 export default function Me() {
-  // TODO: 실제 사용자 데이터로 교체
+  const { user, logout } = useAuth();
+
+  // 로그인되지 않은 경우
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-lg shadow-md text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">로그인이 필요합니다</h1>
+          <p className="text-gray-600 mb-6">마이페이지를 보려면 로그인해주세요.</p>
+          <div className="space-x-4">
+            <Link to="/login">
+              <Button>로그인</Button>
+            </Link>
+            <Link to="/register">
+              <Button variant="outline">회원가입</Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // TODO: 실제 사용자 데이터로 교체 (현재는 하드코딩)
   const userData = {
-    nickname: "김기사",
     level: 5,
     points: 1250,
     totalPosts: 23,
     totalComments: 67,
-    joinDate: "2024-01-15",
+    joinDate: user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "2024-01-15",
     badges: ["단속헌터", "쉼터마스터", "댓글왕"],
     recentActivity: [
       { type: "post", title: "경부선 단속 정보", time: "2시간 전" },
@@ -50,7 +72,7 @@ export default function Me() {
               <Link to="/notifications" className="text-gray-600 hover:text-gray-900">
                 알림
               </Link>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={logout}>
                 <LogOut className="h-4 w-4 mr-2" />
                 로그아웃
               </Button>
@@ -68,14 +90,20 @@ export default function Me() {
             </div>
             <div className="flex-1">
               <div className="flex items-center space-x-3 mb-2">
-                <h1 className="text-2xl font-bold text-gray-900">{userData.nickname}</h1>
+                <h1 className="text-2xl font-bold text-gray-900">{user.nickname}</h1>
                 <div className="flex items-center bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-sm">
                   <Star className="h-4 w-4 mr-1" />
                   Lv.{userData.level}
                 </div>
+                {user.is_admin && (
+                  <div className="flex items-center bg-red-100 text-red-800 px-2 py-1 rounded-full text-sm">
+                    <Trophy className="h-4 w-4 mr-1" />
+                    관리자
+                  </div>
+                )}
               </div>
               <p className="text-gray-600 mb-2">
-                가입일: {userData.joinDate} • 총 포인트: {userData.points.toLocaleString()}P
+                지역: {user.region} • 가입일: {userData.joinDate} • 총 포인트: {userData.points.toLocaleString()}P
               </p>
               <div className="flex space-x-2">
                 {userData.badges.map((badge, index) => (

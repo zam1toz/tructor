@@ -1,7 +1,23 @@
-import { useParams, Link } from "react-router";
+import { useParams, Link, useLoaderData } from "react-router";
+import { getRestAreaById } from "~/lib/db/queries";
+
+export async function loader({ params }: { params: { id: string } }) {
+  try {
+    const restArea = await getRestAreaById(params.id);
+    if (!restArea) {
+      throw new Response("쉼터를 찾을 수 없습니다.", { status: 404 });
+    }
+    
+    return { restArea };
+  } catch (error) {
+    console.error('쉼터 상세 로딩 오류:', error);
+    throw new Response("쉼터 정보를 불러올 수 없습니다.", { status: 500 });
+  }
+}
 
 export default function LocationDetailPage() {
   const { id } = useParams();
+  const { restArea } = useLoaderData<typeof loader>();
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -14,11 +30,15 @@ export default function LocationDetailPage() {
         
         <div className="border rounded-lg p-6">
           <header className="mb-6">
-            <h1 className="text-3xl font-bold mb-2">위치 정보 (ID: {id})</h1>
+            <h1 className="text-3xl font-bold mb-2">{restArea.name}</h1>
             <div className="flex items-center gap-4 text-gray-600">
-              <span>위치명</span>
-              <span>등록일: 2024-01-01</span>
-              <span>방문자: 45명</span>
+              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                restArea.type === '쉼터' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'
+              }`}>
+                {restArea.type}
+              </span>
+              <span>등록일: {new Date(restArea.createdAt).toLocaleDateString()}</span>
+              <span>평점: {restArea.averageRating} ({restArea.reviewCount}개 리뷰)</span>
             </div>
           </header>
           
@@ -27,20 +47,20 @@ export default function LocationDetailPage() {
               <h2 className="text-xl font-semibold mb-4">위치 상세 정보</h2>
               <div className="space-y-3">
                 <div>
-                  <label className="font-medium text-gray-700">주소:</label>
-                  <p className="text-gray-900">서울특별시 강남구 테헤란로 123</p>
+                  <label className="font-medium text-gray-700">위치:</label>
+                  <p className="text-gray-900">위도: {restArea.latitude}, 경도: {restArea.longitude}</p>
                 </div>
                 <div>
-                  <label className="font-medium text-gray-700">좌표:</label>
-                  <p className="text-gray-900">37.5665, 126.9780</p>
+                  <label className="font-medium text-gray-700">유형:</label>
+                  <p className="text-gray-900">{restArea.type}</p>
                 </div>
                 <div>
-                  <label className="font-medium text-gray-700">카테고리:</label>
-                  <p className="text-gray-900">관광지</p>
+                  <label className="font-medium text-gray-700">평균 평점:</label>
+                  <p className="text-gray-900">{restArea.averageRating} / 5.00</p>
                 </div>
                 <div>
-                  <label className="font-medium text-gray-700">설명:</label>
-                  <p className="text-gray-900">이곳은 아름다운 관광지입니다. 많은 사람들이 방문하는 인기 있는 장소입니다.</p>
+                  <label className="font-medium text-gray-700">리뷰 수:</label>
+                  <p className="text-gray-900">{restArea.reviewCount}개</p>
                 </div>
               </div>
             </div>

@@ -23,13 +23,16 @@ export const linkedToTypeEnum = pgEnum('linked_to_type', ['post', 'comment']);
 // Users table
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
+  phone: text('phone').notNull(),
+  password: text('password').notNull(),
   nickname: text('nickname').notNull(),
   region: text('region').notNull(),
-  isAdmin: boolean('is_admin').notNull().default(false),
+  is_admin: boolean('is_admin').notNull().default(false),
   status: userStatusEnum('status').notNull().default('active'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   lastLogin: timestamp('last_login'),
 }, (table) => ({
+  phoneIdx: uniqueIndex('users_phone_idx').on(table.phone),
   nicknameIdx: uniqueIndex('users_nickname_idx').on(table.nickname),
   statusIdx: index('users_status_idx').on(table.status),
 }));

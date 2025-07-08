@@ -2,6 +2,7 @@ import { Button } from "~/components/ui/button";
 import { Link } from "react-router";
 import { MapPin, TrendingUp, AlertTriangle, Users, Trophy, Target } from "lucide-react";
 import type { Route } from "./+types/home";
+import { useAuth } from "~/contexts/AuthContext";
 /* import { Welcome } from "../welcome/welcome"; */
 
 export function meta({}: Route.MetaArgs) {
@@ -12,6 +13,8 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
+  const { user, loading, logout } = useAuth();
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 헤더 */}
@@ -19,15 +22,31 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-blue-600">트럭터</h1>
+              <Link to="/" className="text-2xl font-bold text-blue-600 hover:text-blue-800">
+                트럭터
+              </Link>
             </div>
             <div className="flex items-center space-x-4">
-              <Link to="/login" className="text-gray-600 hover:text-gray-900">
-                로그인
-              </Link>
-              <Link to="/register">
-                <Button>회원가입</Button>
-              </Link>
+              {loading ? (
+                <span>로딩 중...</span>
+              ) : user ? (
+                <div className="flex items-center space-x-4">
+                  <span className="font-bold">{user.nickname}님 환영합니다!</span>
+                  <Link to="/me">
+                    <Button variant="outline">마이페이지</Button>
+                  </Link>
+                  <Button variant="outline" onClick={logout}>로그아웃</Button>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-4">
+                  <Link to="/login">
+                    <Button>로그인</Button>
+                  </Link>
+                  <Link to="/register">
+                    <Button variant="outline">회원가입</Button>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>
