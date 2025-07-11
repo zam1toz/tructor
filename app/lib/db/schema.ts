@@ -173,6 +173,59 @@ export const banHistory = pgTable('ban_history', {
   dateRangeIdx: index('ban_history_date_range_idx').on(table.startAt, table.endAt),
 }));
 
+// Bookmarks table
+export const bookmarks = pgTable('bookmarks', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  postId: uuid('post_id').notNull().references(() => posts.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => ({
+  userPostIdx: uniqueIndex('bookmarks_user_post_idx').on(table.userId, table.postId),
+  userIdx: index('bookmarks_user_idx').on(table.userId),
+  postIdx: index('bookmarks_post_idx').on(table.postId),
+}));
+
+// Points table
+export const points = pgTable('points', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  amount: integer('amount').notNull(),
+  reason: text('reason').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => ({
+  userIdx: index('points_user_idx').on(table.userId),
+  createdAtIdx: index('points_created_at_idx').on(table.createdAt),
+}));
+
+// Missions table
+export const missions = pgTable('missions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  category: text('category').notNull(),
+  points: integer('points').notNull(),
+  isActive: boolean('is_active').notNull().default(true),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => ({
+  categoryIdx: index('missions_category_idx').on(table.category),
+  isActiveIdx: index('missions_is_active_idx').on(table.isActive),
+}));
+
+// UserMissions table
+export const userMissions = pgTable('user_missions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  missionId: uuid('mission_id').notNull().references(() => missions.id, { onDelete: 'cascade' }),
+  isCompleted: boolean('is_completed').notNull().default(false),
+  completedAt: timestamp('completed_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => ({
+  userMissionIdx: uniqueIndex('user_missions_user_mission_idx').on(table.userId, table.missionId),
+  userIdx: index('user_missions_user_idx').on(table.userId),
+  missionIdx: index('user_missions_mission_idx').on(table.missionId),
+  isCompletedIdx: index('user_missions_is_completed_idx').on(table.isCompleted),
+}));
+
 // Type exports for TypeScript
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -193,4 +246,12 @@ export type NewAdminActionLog = typeof adminActionLogs.$inferInsert;
 export type Media = typeof media.$inferSelect;
 export type NewMedia = typeof media.$inferInsert;
 export type BanHistory = typeof banHistory.$inferSelect;
-export type NewBanHistory = typeof banHistory.$inferInsert; 
+export type NewBanHistory = typeof banHistory.$inferInsert;
+export type Bookmark = typeof bookmarks.$inferSelect;
+export type NewBookmark = typeof bookmarks.$inferInsert;
+export type Point = typeof points.$inferSelect;
+export type NewPoint = typeof points.$inferInsert;
+export type Mission = typeof missions.$inferSelect;
+export type NewMission = typeof missions.$inferInsert;
+export type UserMission = typeof userMissions.$inferSelect;
+export type NewUserMission = typeof userMissions.$inferInsert; 

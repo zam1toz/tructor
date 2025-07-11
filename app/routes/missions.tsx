@@ -64,6 +64,23 @@ export default function Missions() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* 네비게이션 바 */}
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Link 
+              to="/" 
+              className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              홈으로
+            </Link>
+            <div className="text-gray-400">|</div>
+            <span className="text-sm text-gray-600">미션</span>
+          </div>
+        </div>
+
         {/* 미션 통계 */}
         <section className="bg-gradient-to-r from-green-500 to-blue-600 rounded-lg shadow-md p-6 mb-8 text-white">
           <div className="flex items-center justify-between">

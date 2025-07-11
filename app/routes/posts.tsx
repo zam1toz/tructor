@@ -1,6 +1,9 @@
 import { Link, useLoaderData } from 'react-router';
 import { getPosts } from '~/lib/db/queries';
 import { AlertTriangle, MapPin, Target } from 'lucide-react';
+import { useAuth } from "../contexts/AuthContext";
+import { Button } from "../components/ui/button";
+import Navbar from "../components/Navbar";
 
 export async function loader() {
   try {
@@ -14,31 +17,40 @@ export async function loader() {
 
 export default function PostsPage() {
   const { posts } = useLoaderData<typeof loader>();
+  const { user, loading, logout } = useAuth();
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 헤더 */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <Link to="/" className="text-2xl font-bold text-blue-600 hover:text-blue-800">
-                트럭터
-              </Link>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link to="/login" className="text-gray-600 hover:text-gray-900">
-                로그인
-              </Link>
-              <Link to="/register" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-                회원가입
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       {/* 메인 콘텐츠 */}
       <div className="container mx-auto px-4 py-8">
+        {/* 네비게이션 바 */}
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Link 
+              to="/" 
+              className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              홈으로
+            </Link>
+            <div className="text-gray-400">|</div>
+            <span className="text-sm text-gray-600">게시글 목록</span>
+          </div>
+          
+          <Link 
+            to="/posts/new" 
+            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            글쓰기
+          </Link>
+        </div>
+
         <h1 className="text-3xl font-bold mb-6">게시글 목록</h1>
       <div className="grid gap-4">
         {posts.length === 0 ? (

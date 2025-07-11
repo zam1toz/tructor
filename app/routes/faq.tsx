@@ -2,6 +2,7 @@ import { Button } from "~/components/ui/button";
 import { Link } from "react-router";
 import { HelpCircle, ChevronDown, ChevronUp, Mail, Phone } from "lucide-react";
 import { useState } from "react";
+import Navbar from "../components/Navbar";
 
 export function meta() {
   return [
@@ -71,24 +72,7 @@ export default function FAQ() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 헤더 */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <Link to="/" className="text-2xl font-bold text-blue-600">트럭터</Link>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link to="/terms" className="text-gray-600 hover:text-gray-900">
-                이용약관
-              </Link>
-              <Link to="/login" className="text-gray-600 hover:text-gray-900">
-                로그인
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 헤더 섹션 */}

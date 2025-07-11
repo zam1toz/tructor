@@ -1,149 +1,227 @@
-import { Button } from "~/components/ui/button";
-import { Link } from "react-router";
-import { AlertTriangle, MessageSquare, Clock, CheckCircle, XCircle } from "lucide-react";
+import { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { ProtectedRoute } from '../components/ProtectedRoute';
+import { Button } from '../components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
-export function meta() {
-  return [
-    { title: "내 신고 - 트럭터" },
-    { name: "description", content: "신고한 콘텐츠를 확인하세요" },
-  ];
+interface Report {
+  id: string;
+  targetType: 'post' | 'comment';
+  targetId: string;
+  targetTitle?: string;
+  targetContent: string;
+  reason: string;
+  status: 'pending' | 'reviewed' | 'dismissed';
+  createdAt: string;
+  handledAt?: string;
+  result?: string;
 }
 
-export default function MeReports() {
-  // TODO: 실제 신고 데이터로 교체
-  const reports = [
-    {
-      id: 1,
-      type: "post",
-      title: "부적절한 광고 게시글",
-      content: "스팸성 광고가 포함된 게시글입니다...",
-      status: "pending",
-      date: "2024-01-15",
-      reason: "스팸/광고"
-    },
-    {
-      id: 2,
-      type: "comment",
-      title: "부적절한 댓글",
-      content: "타인을 비방하는 내용의 댓글입니다...",
-      status: "reviewed",
-      date: "2024-01-14",
-      reason: "비방/욕설"
-    }
-  ];
+export default function ReportsPage() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [reports, setReports] = useState<Report[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const getStatusInfo = (status: string) => {
-    switch (status) {
-      case "pending":
-        return {
-          icon: <Clock className="h-4 w-4 text-yellow-600" />,
-          text: "검토 중",
-          color: "text-yellow-600 bg-yellow-100"
-        };
-      case "reviewed":
-        return {
-          icon: <CheckCircle className="h-4 w-4 text-green-600" />,
-          text: "처리 완료",
-          color: "text-green-600 bg-green-100"
-        };
-      case "dismissed":
-        return {
-          icon: <XCircle className="h-4 w-4 text-red-600" />,
-          text: "반려됨",
-          color: "text-red-600 bg-red-100"
-        };
-      default:
-        return {
-          icon: <Clock className="h-4 w-4 text-gray-600" />,
-          text: "대기 중",
-          color: "text-gray-600 bg-gray-100"
-        };
+  useEffect(() => {
+    fetchReports();
+  }, []);
+
+  const fetchReports = async () => {
+    try {
+      const response = await fetch('/api/user/reports', {
+        headers: {
+          'Authorization': `Bearer ${getAuthToken()}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setReports(data.reports);
+      } else {
+        console.error('신고 내역 조회 실패');
+      }
+    } catch (error) {
+      console.error('신고 내역 조회 오류:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const cancelReport = async (reportId: string) => {
+    try {
+      const response = await fetch(`/api/reports/${reportId}/cancel`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${getAuthToken()}`
+        }
+      });
+
+      if (response.ok) {
+        // 신고 목록에서 제거
+        setReports(prev => prev.filter(report => report.id !== reportId));
+        alert('신고가 취소되었습니다.');
+      } else {
+        alert('신고 취소에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('신고 취소 오류:', error);
+      alert('신고 취소 중 오류가 발생했습니다.');
+    }
+  };
+
+  const getAuthToken = () => {
+    return document.cookie
+      .split('; ')
+      .find(row => row.startsWith('auth_token='))
+      ?.split('=')[1];
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'reviewed':
+        return 'bg-green-100 text-green-800';
+      case 'dismissed':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return '검토 중';
+      case 'reviewed':
+        return '처리 완료';
+      case 'dismissed':
+        return '기각됨';
+      default:
+        return '알 수 없음';
+    }
+  };
+
+  if (!user) return null;
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* 헤더 */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <Link to="/" className="text-2xl font-bold text-blue-600">트럭터</Link>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link to="/me" className="text-gray-600 hover:text-gray-900">
-                마이페이지
-              </Link>
-              <Link to="/posts" className="text-gray-600 hover:text-gray-900">
-                커뮤니티
-              </Link>
-            </div>
-          </div>
+    <ProtectedRoute>
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold">내 신고 내역</h1>
+          <Button onClick={() => navigate('/me')} variant="outline">
+            뒤로가기
+          </Button>
         </div>
-      </header>
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 헤더 섹션 */}
-        <section className="mb-8">
-          <div className="flex items-center space-x-3 mb-4">
-            <AlertTriangle className="h-8 w-8 text-red-600" />
-            <h1 className="text-3xl font-bold text-gray-900">내 신고</h1>
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           </div>
-          <p className="text-gray-600">신고한 콘텐츠의 처리 상태를 확인하세요.</p>
-        </section>
-
-        {/* 신고 목록 */}
-        <section className="space-y-4">
-          {reports.map((report) => {
-            const statusInfo = getStatusInfo(report.status);
-            
-            return (
+        ) : reports.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-gray-400 mb-4">
+              <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">신고 내역이 없습니다</h3>
+            <p className="text-gray-500">부적절한 콘텐츠를 발견하면 신고해주세요!</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {reports.map((report) => (
               <div key={report.id} className="bg-white rounded-lg shadow-md p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-2">
-                      <MessageSquare className="h-4 w-4 text-blue-500" />
+                      <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">
+                        {report.targetType === 'post' ? '게시글' : '댓글'}
+                      </span>
+                      <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(report.status)}`}>
+                        {getStatusText(report.status)}
+                      </span>
                       <span className="text-sm text-gray-500">
-                        {report.type === "post" ? "게시글" : "댓글"}
-                      </span>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
-                        {statusInfo.text}
+                        {new Date(report.createdAt).toLocaleDateString('ko-KR')}
                       </span>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{report.title}</h3>
-                    <p className="text-gray-600 mb-3">{report.content}</p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
-                        <span>신고 사유: {report.reason}</span>
-                        <span>{report.date}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        {statusInfo.icon}
-                        <span className="text-sm font-medium">{statusInfo.text}</span>
-                      </div>
+                    
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      신고 사유: {report.reason}
+                    </h3>
+                    
+                    <div className="bg-gray-50 rounded-lg p-3 mb-3">
+                      <p className="text-sm text-gray-700">
+                        <strong>신고된 콘텐츠:</strong> {report.targetContent}
+                      </p>
                     </div>
+                    
+                    {report.handledAt && (
+                      <div className="text-sm text-gray-500 mb-2">
+                        처리일: {new Date(report.handledAt).toLocaleDateString('ko-KR')}
+                      </div>
+                    )}
+                    
+                    {report.result && (
+                      <div className="bg-blue-50 rounded-lg p-3 mb-3">
+                        <p className="text-sm text-blue-800">
+                          <strong>처리 결과:</strong> {report.result}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex flex-col space-y-2 ml-4">
+                    {report.targetType === 'post' && (
+                      <Button
+                        onClick={() => navigate(`/posts/${report.targetId}`)}
+                        size="sm"
+                        variant="outline"
+                      >
+                        게시글 보기
+                      </Button>
+                    )}
+                    
+                    {report.status === 'pending' && (
+                      <Button
+                        onClick={() => cancelReport(report.id)}
+                        size="sm"
+                        variant="destructive"
+                      >
+                        신고 취소
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
-            );
-          })}
-        </section>
-
-        {reports.length === 0 && (
-          <section className="bg-white rounded-lg shadow-md p-8 text-center">
-            <AlertTriangle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">신고한 콘텐츠가 없습니다</h3>
-            <p className="text-gray-600 mb-4">
-              부적절한 콘텐츠를 발견하면 신고해 주세요.
-            </p>
-            <Link to="/posts">
-              <Button>
-                커뮤니티 보기
-              </Button>
-            </Link>
-          </section>
+            ))}
+          </div>
         )}
-      </main>
-    </div>
+
+        {/* 신고 가이드라인 */}
+        <div className="bg-blue-50 rounded-lg p-6 mt-8">
+          <h3 className="text-lg font-semibold text-blue-900 mb-4">신고 가이드라인</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div className="flex items-start space-x-3">
+              <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
+              <span>욕설, 비방, 차별적 표현</span>
+            </div>
+            <div className="flex items-start space-x-3">
+              <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
+              <span>허위 정보 또는 스팸</span>
+            </div>
+            <div className="flex items-start space-x-3">
+              <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
+              <span>개인정보 노출</span>
+            </div>
+            <div className="flex items-start space-x-3">
+              <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
+              <span>상업적 광고 또는 홍보</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ProtectedRoute>
   );
 } 

@@ -1,249 +1,147 @@
-import { Button } from "~/components/ui/button";
-import { Link } from "react-router";
-import { useAuth } from "~/contexts/AuthContext";
-import { 
-  User, 
-  MapPin, 
-  Trophy, 
-  Bookmark, 
-  MessageSquare, 
-  Settings, 
-  LogOut,
-  Star,
-  Calendar,
-  TrendingUp
-} from "lucide-react";
+import { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { ProtectedRoute } from '../components/ProtectedRoute';
+import { Button } from '../components/ui/button';
+import { useNavigate, Link } from 'react-router-dom';
+import Navbar from "../components/Navbar";
 
-export function meta() {
-  return [
-    { title: "마이페이지 - 트럭터" },
-    { name: "description", content: "내 활동 내역과 정보를 확인하세요" },
-  ];
-}
-
-export default function Me() {
+export default function MePage() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  // 로그인되지 않은 경우
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-lg shadow-md text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">로그인이 필요합니다</h1>
-          <p className="text-gray-600 mb-6">마이페이지를 보려면 로그인해주세요.</p>
-          <div className="space-x-4">
-            <Link to="/login">
-              <Button>로그인</Button>
-            </Link>
-            <Link to="/register">
-              <Button variant="outline">회원가입</Button>
-            </Link>
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
+
+  const handleUpdateProfile = async (formData: FormData) => {
+    setIsUpdating(true);
+    try {
+      const response = await fetch('/api/user/update', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        // 프로필 업데이트 성공 처리
+        window.location.reload();
+      } else {
+        const data = await response.json();
+        alert(data.error || '프로필 업데이트에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('프로필 업데이트 오류:', error);
+      alert('프로필 업데이트 중 오류가 발생했습니다.');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  if (!user) return null;
+
+  return (
+    <ProtectedRoute>
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8 max-w-2xl">
+          {/* 네비게이션 바 */}
+          <div className="mb-6 flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Link 
+                to="/" 
+                className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                홈으로
+              </Link>
+              <div className="text-gray-400">|</div>
+              <span className="text-sm text-gray-600">내 프로필</span>
+            </div>
+          </div>
+
+          <h1 className="text-3xl font-bold mb-8">내 프로필</h1>
+          
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  닉네임
+                </label>
+                <p className="text-lg font-semibold">{user.nickname}</p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  전화번호
+                </label>
+                <p className="text-lg">{user.phone}</p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  지역
+                </label>
+                <p className="text-lg">{user.region}</p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  가입일
+                </label>
+                <p className="text-lg">
+                  {new Date(user.createdAt).toLocaleDateString('ko-KR')}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <Button 
+              onClick={() => navigate('/me/points')}
+              className="w-full"
+            >
+              포인트 내역
+            </Button>
+            
+            <Button 
+              onClick={() => navigate('/me/bookmarks')}
+              className="w-full"
+              variant="outline"
+            >
+              북마크
+            </Button>
+            
+            <Button 
+              onClick={() => navigate('/me/reports')}
+              className="w-full"
+              variant="outline"
+            >
+              내 신고 내역
+            </Button>
+            
+            <Button 
+              onClick={() => navigate('/notifications')}
+              className="w-full"
+              variant="outline"
+            >
+              알림
+            </Button>
+          </div>
+
+          <div className="flex gap-4">
+            <Button 
+              onClick={handleLogout}
+              variant="destructive"
+              className="flex-1"
+            >
+              로그아웃
+            </Button>
           </div>
         </div>
       </div>
-    );
-  }
-
-  // TODO: 실제 사용자 데이터로 교체 (현재는 하드코딩)
-  const userData = {
-    level: 5,
-    points: 1250,
-    totalPosts: 23,
-    totalComments: 67,
-    joinDate: user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "2024-01-15",
-    badges: ["단속헌터", "쉼터마스터", "댓글왕"],
-    recentActivity: [
-      { type: "post", title: "경부선 단속 정보", time: "2시간 전" },
-      { type: "comment", title: "서울외곽순환도로 쉼터 추천", time: "5시간 전" },
-      { type: "stamp", title: "서울 쉼터 방문", time: "1일 전" },
-    ]
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* 헤더 */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <Link to="/" className="text-2xl font-bold text-blue-600">트럭터</Link>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link to="/notifications" className="text-gray-600 hover:text-gray-900">
-                알림
-              </Link>
-              <Button variant="outline" size="sm" onClick={logout}>
-                <LogOut className="h-4 w-4 mr-2" />
-                로그아웃
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 프로필 섹션 */}
-        <section className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <div className="flex items-center space-x-6">
-            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center">
-              <User className="h-10 w-10 text-blue-600" />
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center space-x-3 mb-2">
-                <h1 className="text-2xl font-bold text-gray-900">{user.nickname}</h1>
-                <div className="flex items-center bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-sm">
-                  <Star className="h-4 w-4 mr-1" />
-                  Lv.{userData.level}
-                </div>
-                {user.is_admin && (
-                  <div className="flex items-center bg-red-100 text-red-800 px-2 py-1 rounded-full text-sm">
-                    <Trophy className="h-4 w-4 mr-1" />
-                    관리자
-                  </div>
-                )}
-              </div>
-              <p className="text-gray-600 mb-2">
-                지역: {user.region} • 가입일: {userData.joinDate} • 총 포인트: {userData.points.toLocaleString()}P
-              </p>
-              <div className="flex space-x-2">
-                {userData.badges.map((badge, index) => (
-                  <span
-                    key={index}
-                    className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs"
-                  >
-                    {badge}
-                  </span>
-                ))}
-              </div>
-            </div>
-            <div className="text-right">
-              <Link to="/me/points">
-                <Button variant="outline">
-                  포인트 내역
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* 통계 카드 */}
-        <section className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow-md text-center">
-            <div className="flex justify-center mb-2">
-              <MessageSquare className="h-8 w-8 text-blue-600" />
-            </div>
-            <div className="text-2xl font-bold text-gray-900">{userData.totalPosts}</div>
-            <div className="text-gray-600">총 게시글</div>
-          </div>
-          
-          <div className="bg-white p-6 rounded-lg shadow-md text-center">
-            <div className="flex justify-center mb-2">
-              <MessageSquare className="h-8 w-8 text-green-600" />
-            </div>
-            <div className="text-2xl font-bold text-gray-900">{userData.totalComments}</div>
-            <div className="text-gray-600">총 댓글</div>
-          </div>
-          
-          <div className="bg-white p-6 rounded-lg shadow-md text-center">
-            <div className="flex justify-center mb-2">
-              <Trophy className="h-8 w-8 text-yellow-600" />
-            </div>
-            <div className="text-2xl font-bold text-gray-900">{userData.badges.length}</div>
-            <div className="text-gray-600">획득 뱃지</div>
-          </div>
-          
-          <div className="bg-white p-6 rounded-lg shadow-md text-center">
-            <div className="flex justify-center mb-2">
-              <MapPin className="h-8 w-8 text-purple-600" />
-            </div>
-            <div className="text-2xl font-bold text-gray-900">15</div>
-            <div className="text-gray-600">방문 쉼터</div>
-          </div>
-        </section>
-
-        {/* 메뉴 그리드 */}
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <Link to="/me/bookmarks" className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-            <div className="flex items-center space-x-4">
-              <Bookmark className="h-8 w-8 text-blue-600" />
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">북마크</h3>
-                <p className="text-gray-600">저장한 게시글</p>
-              </div>
-            </div>
-          </Link>
-          
-          <Link to="/me/reports" className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-            <div className="flex items-center space-x-4">
-              <MessageSquare className="h-8 w-8 text-red-600" />
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">내 신고</h3>
-                <p className="text-gray-600">신고한 콘텐츠</p>
-              </div>
-            </div>
-          </Link>
-          
-          <Link to="/ranking" className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-            <div className="flex items-center space-x-4">
-              <TrendingUp className="h-8 w-8 text-green-600" />
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">랭킹</h3>
-                <p className="text-gray-600">내 순위 확인</p>
-              </div>
-            </div>
-          </Link>
-          
-          <Link to="/missions" className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-            <div className="flex items-center space-x-4">
-              <Trophy className="h-8 w-8 text-yellow-600" />
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">미션</h3>
-                <p className="text-gray-600">진행 중인 미션</p>
-              </div>
-            </div>
-          </Link>
-          
-          <Link to="/map" className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-            <div className="flex items-center space-x-4">
-              <MapPin className="h-8 w-8 text-purple-600" />
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">지도</h3>
-                <p className="text-gray-600">운행 기록 보기</p>
-              </div>
-            </div>
-          </Link>
-          
-          <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-            <div className="flex items-center space-x-4">
-              <Settings className="h-8 w-8 text-gray-600" />
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">설정</h3>
-                <p className="text-gray-600">계정 설정</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 최근 활동 */}
-        <section className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">최근 활동</h2>
-          <div className="space-y-4">
-            {userData.recentActivity.map((activity, index) => (
-              <div key={index} className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
-                <div className="flex-shrink-0">
-                  {activity.type === "post" && <MessageSquare className="h-5 w-5 text-blue-600" />}
-                  {activity.type === "comment" && <MessageSquare className="h-5 w-5 text-green-600" />}
-                  {activity.type === "stamp" && <MapPin className="h-5 w-5 text-purple-600" />}
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">{activity.title}</p>
-                  <p className="text-xs text-gray-500">{activity.time}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      </main>
-    </div>
+    </ProtectedRoute>
   );
 } 
