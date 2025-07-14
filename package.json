@@ -11,7 +11,10 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:push": "drizzle-kit push",
-    "db:seed": "tsx scripts/seed.ts"
+    "db:seed": "tsx scripts/seed.ts",
+    "db:apply-rls": "tsx scripts/apply-rls-policies.ts",
+    "db:test-rls": "tsx scripts/test-rls-policies.ts",
+    "db:apply-rls-supabase": "tsx scripts/apply-rls-policies-supabase.ts"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",

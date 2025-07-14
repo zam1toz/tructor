@@ -10,6 +10,7 @@ export const config = {
   supabase: {
     url: process.env.SUPABASE_URL || 'https://fqeexfxrwgqplyhsfrcc.supabase.co',
     anonKey: process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxZWV4Znhyd2dxcGx5aHNmcmNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNDk3MTgsImV4cCI6MjA2NjkyNTcxOH0.FvjzJnafTXIYjsyZrSSdUL2O78pnHFkjUxAOYGYglHs',
+    serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
   },
   app: {
     port: process.env.PORT || 3000,
