@@ -45,6 +45,7 @@ export const posts = pgTable('posts', {
   title: text('title').notNull(),
   content: text('content').notNull(),
   restAreaId: uuid('rest_area_id').references(() => restAreas.id),
+  rating: integer('rating'), // 휴게소 평점 (1-5)
   likeCount: integer('like_count').notNull().default(0),
   commentCount: integer('comment_count').notNull().default(0),
   createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -53,6 +54,7 @@ export const posts = pgTable('posts', {
   authorIdx: index('posts_author_idx').on(table.authorId),
   categoryIdx: index('posts_category_idx').on(table.category),
   restAreaIdx: index('posts_rest_area_idx').on(table.restAreaId),
+  ratingIdx: index('posts_rating_idx').on(table.rating),
   createdAtIdx: index('posts_created_at_idx').on(table.createdAt),
 }));
 
@@ -216,6 +218,8 @@ export const userMissions = pgTable('user_missions', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   missionId: uuid('mission_id').notNull().references(() => missions.id, { onDelete: 'cascade' }),
+  progress: integer('progress').notNull().default(0),
+  maxProgress: integer('max_progress').notNull().default(1),
   isCompleted: boolean('is_completed').notNull().default(false),
   completedAt: timestamp('completed_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
