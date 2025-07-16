@@ -24,6 +24,7 @@ export const linkedToTypeEnum = pgEnum('linked_to_type', ['post', 'comment']);
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
   phone: text('phone').notNull(),
+  email: text('email'), // 이메일 필드 추가 (선택사항)
   password: text('password').notNull(),
   nickname: text('nickname').notNull(),
   region: text('region').notNull(),
@@ -33,6 +34,7 @@ export const users = pgTable('users', {
   lastLogin: timestamp('last_login'),
 }, (table) => ({
   phoneIdx: uniqueIndex('users_phone_idx').on(table.phone),
+  emailIdx: index('users_email_idx').on(table.email), // 이메일 인덱스 추가
   nicknameIdx: uniqueIndex('users_nickname_idx').on(table.nickname),
   statusIdx: index('users_status_idx').on(table.status),
 }));

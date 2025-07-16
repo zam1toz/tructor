@@ -47,6 +47,36 @@ This project uses Drizzle ORM with PostgreSQL. Follow these steps to set up the 
    npm run db:studio
    ```
 
+### Email Setup
+
+This project uses React Email for transactional emails. Follow these steps to set up email functionality:
+
+1. **Add email configuration to `.env`**:
+   ```env
+   EMAIL_HOST=smtp.gmail.com
+   EMAIL_PORT=587
+   EMAIL_USER=your-email@gmail.com
+   EMAIL_PASS=your-app-password
+   EMAIL_FROM=noreply@tructor.com
+   ```
+
+2. **For Gmail users**:
+   - Enable 2-factor authentication
+   - Generate an App Password (Google Account → Security → App Passwords)
+   - Use the App Password as `EMAIL_PASS`
+
+3. **Add email column to database**:
+   Run this SQL in Supabase SQL Editor:
+   ```sql
+   ALTER TABLE users ADD COLUMN email TEXT;
+   CREATE INDEX users_email_idx ON users(email);
+   ```
+
+4. **Test email configuration**:
+   ```bash
+   npm run test:email
+   ```
+
 ### Database Commands
 
 - `npm run db:generate` - Generate migration files

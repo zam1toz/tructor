@@ -79,6 +79,7 @@ export async function registerUser(credentials: RegisterCredentials): Promise<{ 
       .from('users')
       .insert({
         phone: credentials.phone,
+        email: credentials.email, // 이메일 필드 추가
         password: hashedPassword,
         nickname: credentials.nickname,
         region: credentials.region,

@@ -1,4 +1,5 @@
 import { registerUser } from '../lib/auth';
+import { EmailService } from '../lib/emailService';
 
 export async function action({ request }: { request: Request }) {
   if (request.method !== 'POST') {
@@ -14,6 +15,7 @@ export async function action({ request }: { request: Request }) {
     const password = formData.get('password') as string;
     const nickname = formData.get('nickname') as string;
     const region = formData.get('region') as string;
+    const email = formData.get('email') as string; // 이메일 필드 추가
 
     // 입력 검증
     if (!phone || !password || !nickname || !region) {
@@ -36,6 +38,20 @@ export async function action({ request }: { request: Request }) {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       });
+    }
+
+    // 이메일 형식 검증 (이메일이 제공된 경우)
+    if (email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return new Response(JSON.stringify({ 
+          success: false, 
+          error: '올바른 이메일 형식을 입력해주세요.' 
+        }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
     }
 
     // 비밀번호 길이 검증
@@ -61,7 +77,7 @@ export async function action({ request }: { request: Request }) {
     }
 
     // 회원가입 처리
-    const result = await registerUser({ phone, password, nickname, region });
+    const result = await registerUser({ phone, password, nickname, region, email });
 
     if (!result.success) {
       return new Response(JSON.stringify({ 
@@ -71,6 +87,16 @@ export async function action({ request }: { request: Request }) {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       });
+    }
+
+    // 환영 이메일 전송 (이메일이 제공된 경우)
+    if (email) {
+      try {
+        await EmailService.sendWelcomeEmail(email, nickname, region);
+      } catch (emailError) {
+        console.error('환영 이메일 전송 실패:', emailError);
+        // 이메일 전송 실패는 회원가입을 막지 않음
+      }
     }
 
     // 성공 응답

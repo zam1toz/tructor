@@ -19,6 +19,7 @@ export default function Register() {
   const [formData, setFormData] = useState({
     nickname: "",
     phone: "",
+    email: "", // 이메일 필드 추가
     password: "",
     confirmPassword: "",
     region: "서울",
@@ -51,7 +52,7 @@ export default function Register() {
       return;
     }
     
-    const success = await register(formData.phone, formData.password, formData.nickname, formData.region);
+    const success = await register(formData.phone, formData.password, formData.nickname, formData.region, formData.email);
     if (success) {
       navigate("/");
     }
@@ -133,6 +134,27 @@ export default function Register() {
                   placeholder="010-1234-5678"
                 />
               </div>
+            </div>
+
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                이메일 <span className="text-gray-500">(선택사항)</span>
+              </label>
+              <div className="mt-1">
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="example@email.com"
+                />
+              </div>
+              <p className="mt-1 text-sm text-gray-500">
+                이메일을 입력하시면 환영 메일과 알림을 받으실 수 있습니다.
+              </p>
             </div>
 
             <div>

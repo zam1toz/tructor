@@ -30,6 +30,7 @@ export interface RegisterCredentials {
   password: string;
   nickname: string;
   region: string;
+  email?: string; // 이메일 필드 추가 (선택사항)
 }
 
 // 인증 상태 타입

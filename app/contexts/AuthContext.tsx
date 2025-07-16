@@ -7,7 +7,7 @@ interface AuthContextType {
   loading: boolean;
   error: string | null;
   login: (phone: string, password: string) => Promise<boolean>;
-  register: (phone: string, password: string, nickname: string, region: string) => Promise<boolean>;
+  register: (phone: string, password: string, nickname: string, region: string, email?: string) => Promise<boolean>;
   logout: () => Promise<void>;
   clearError: () => void;
 }
@@ -100,7 +100,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const register = async (phone: string, password: string, nickname: string, region: string): Promise<boolean> => {
+  const register = async (phone: string, password: string, nickname: string, region: string, email?: string): Promise<boolean> => {
     try {
       setLoading(true);
       setError(null);
@@ -110,6 +110,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       formData.append('password', password);
       formData.append('nickname', nickname);
       formData.append('region', region);
+      if (email) {
+        formData.append('email', email);
+      }
 
       const response = await fetch('/api/auth/register', {
         method: 'POST',
