@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { supabase } from './supabase';
+import { supabase, supabaseAdmin } from './supabase';
 import type { AuthUser, LoginCredentials, RegisterCredentials } from './supabase';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
@@ -47,8 +47,8 @@ export async function registerUser(credentials: RegisterCredentials): Promise<{ 
       return { success: false, error: '사용할 수 없는 전화번호입니다.' };
     }
 
-    // 전화번호 중복 확인 (legacy user 제외)
-    const { data: existingUser } = await supabase
+    // 전화번호 중복 확인 (legacy user 제외) - admin 클라이언트 사용
+    const { data: existingUser } = await supabaseAdmin
       .from('users')
       .select('id')
       .eq('phone', credentials.phone)
@@ -59,8 +59,8 @@ export async function registerUser(credentials: RegisterCredentials): Promise<{ 
       return { success: false, error: '이미 등록된 전화번호입니다.' };
     }
 
-    // 닉네임 중복 확인 (legacy user 제외)
-    const { data: existingNickname } = await supabase
+    // 닉네임 중복 확인 (legacy user 제외) - admin 클라이언트 사용
+    const { data: existingNickname } = await supabaseAdmin
       .from('users')
       .select('id')
       .eq('nickname', credentials.nickname)
@@ -74,8 +74,8 @@ export async function registerUser(credentials: RegisterCredentials): Promise<{ 
     // 비밀번호 해싱
     const hashedPassword = await hashPassword(credentials.password);
 
-    // 사용자 생성
-    const { data: newUser, error } = await supabase
+    // 사용자 생성 - admin 클라이언트 사용 (RLS 우회)
+    const { data: newUser, error } = await supabaseAdmin
       .from('users')
       .insert({
         phone: credentials.phone,
@@ -112,15 +112,18 @@ export async function loginUser(credentials: LoginCredentials): Promise<{ succes
       return { success: false, error: '전화번호 또는 비밀번호가 올바르지 않습니다.' };
     }
 
-    // 사용자 조회 (legacy user 제외)
-    const { data: user, error } = await supabase
+    // 사용자 조회 (legacy user 제외) - admin 클라이언트 사용
+    const { data: user, error } = await supabaseAdmin
       .from('users')
       .select('*')
       .eq('phone', credentials.phone)
       .not('phone', 'like', 'legacy_user_%')
       .single();
 
+    console.log('로그인 시도:', { phone: credentials.phone, user, error });
+
     if (error || !user) {
+      console.log('사용자 조회 실패:', { error, user });
       return { success: false, error: '전화번호 또는 비밀번호가 올바르지 않습니다.' };
     }
 
@@ -135,13 +138,21 @@ export async function loginUser(credentials: LoginCredentials): Promise<{ succes
     }
 
     // 비밀번호 검증
+    console.log('비밀번호 검증 시작:', { 
+      inputPassword: credentials.password, 
+      hashedPassword: user.password.substring(0, 20) + '...' 
+    });
+    
     const isValidPassword = await verifyPassword(credentials.password, user.password);
+    console.log('비밀번호 검증 결과:', { isValidPassword });
+    
     if (!isValidPassword) {
+      console.log('비밀번호 검증 실패');
       return { success: false, error: '전화번호 또는 비밀번호가 올바르지 않습니다.' };
     }
 
-    // 마지막 로그인 시간 업데이트
-    await supabase
+    // 마지막 로그인 시간 업데이트 - admin 클라이언트 사용
+    await supabaseAdmin
       .from('users')
       .update({ lastLogin: new Date().toISOString() })
       .eq('id', user.id);

@@ -1,10 +1,22 @@
 import { createClient } from '@supabase/supabase-js';
 import { config } from './config';
 
-// Supabase 클라이언트 생성
+// 일반 사용자용 Supabase 클라이언트 (RLS 적용)
 export const supabase = createClient(
   config.supabase.url,
   config.supabase.anonKey
+);
+
+// 관리자용 Supabase 클라이언트 (RLS 우회, 서비스 역할 키 사용)
+export const supabaseAdmin = createClient(
+  config.supabase.url,
+  config.supabase.serviceRoleKey || config.supabase.anonKey, // 서비스 역할 키가 없으면 anon 키 사용
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
 );
 
 // 인증 관련 타입

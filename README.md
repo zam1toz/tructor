@@ -85,6 +85,27 @@ This project uses React Email for transactional emails. Follow these steps to se
 - `npm run db:studio` - Open Drizzle Studio for database management
 - `npm run db:seed` - Seed database with initial test data
 
+### Supabase RLS Policies
+
+This project uses Row Level Security (RLS) policies for data protection. Use the following SQL scripts in Supabase SQL Editor:
+
+#### Fix RLS Policies
+Run `supabase-fix-rls-policies.sql` to:
+- Recreate the `is_admin()` function
+- Check current policy status
+- Verify user statistics
+- Test policy functionality
+
+#### Test RLS Policies  
+Run `supabase-test-policies.sql` to:
+- Verify `is_admin()` function exists
+- Check detailed policy status
+- Confirm RLS activation
+- Analyze policy conditions
+- Test policy behavior
+
+**Important**: Always test policies in Supabase SQL Editor before applying to production.
+
 ### Development
 
 Start the development server with HMR:
